@@ -151,9 +151,11 @@ import h5py
 ```
 
 ## Riferimenti
-Tutti i datasets forniti in questo progetto sono stati presi da [Dataset](link).
-L'implementazione di `test.py` è stata ripresa e riadattata dalla seguente [reposirtory](link).
-
+Tutti i datasets di questo progetto sono stati presi da [CUB-200-2011](http://www.vision.caltech.edu/visipedia-data/CUB-200-2011/CUB_200_2011.tgz), [Omniglot](https://github.com/brendenlake/omniglot/blob/master/python/images_background.zip?raw=true),[Omniglot2](https://github.com/brendenlake/omniglot/blob/master/python/images_evaluation.zip?raw=true), [EMNIST](https://github.com/NanqingD/DAOSL/raw/master/data/emnist.zip). A supporto delle immagini sono stati realizzati tre file json (base, val, novel) con i campi:
+```json
+{"label_names": ["class0","class1",...], "image_names": ["filepath1","filepath2",...],"image_labels":[l1,l2,l3,...]}  
+```
+L'implementazione è stata ripresa e riadattata dalle seguenti repo: [Gestione data e backbone](https://github.com/facebookresearch/low-shot-shrink-hallucinate), [ProtoNet e gestione Omniglot](https://github.com/jakesnell/prototypical-networks), [Struttura e setup](https://github.com/wyharveychen/CloserLookFewShot)
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
