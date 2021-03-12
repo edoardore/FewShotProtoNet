@@ -41,7 +41,7 @@ Eseguire il modulo train.py per addestrare e condurre un nuovo esperimento, le s
     # continue from previous trained model with largest epoch
     resume = False
 ```
-A termine dell'esecuzione si avrà nella directory checkpoints il miglior modello in un file .tar
+A termine dell'esecuzione si avrà nella directory checkpoints il miglior modello best_model.tar (non presenti nella repo a causa delle grandi dimensioni).
 
 ## save_features.py
 Regolando le variabili in modo analogo a quanto visto prima in fase di training è necessario estrarre le features dal modello in .tar in un file .hdf5 presente a fine esecuzione nella directory features
