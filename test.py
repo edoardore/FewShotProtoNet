@@ -39,7 +39,7 @@ def feature_evaluation(cl_data_file, model, n_way=5, n_support=5, n_query=15, ad
     return acc
 
 
-def test(model, n_shot, train_aug, dataset, iter_num):
+def test(model, n_shot, train_aug, dataset, iter_num, adaptation):
     model_dict = dict(
         Conv4=backbone.Conv4,
         Conv4S=backbone.Conv4S,
@@ -59,9 +59,6 @@ def test(model, n_shot, train_aug, dataset, iter_num):
 
     # save feature from the model trained in x epoch, use the best model if x is -1
     save_iter = -1
-
-    # further adaptation in test time or not
-    adaptation = False
 
     acc_all = []
 
@@ -147,7 +144,7 @@ def makeTable(headerRow, columnizedData, columnSpacing=2):
 def testCUB():
     iter_num = 600
     acc_means = []
-    acc_vars = []
+    acc_confidences = []
     # perform data augmentation or not during training
     aug = [False, True]
     # number of labeled data in each class, same as n_support
@@ -160,14 +157,14 @@ def testCUB():
                     print('Test with augmentiation, ' + model + ', n_shot = ' + str(n_shot))
                 else:
                     print('Test without augmentiation, ' + model + ', n_shot = ' + str(n_shot))
-                acc_all = test(model, n_shot, train_aug, 'CUB', iter_num)
+                acc_all = test(model, n_shot, train_aug, 'CUB', iter_num, False)
                 acc_all = np.asarray(acc_all)
                 acc_mean = np.mean(acc_all)
                 acc_std = np.std(acc_all)
                 acc_confidence = 1.96 * acc_std / np.sqrt(iter_num)
                 print('%d Test Acc = %4.2f%% +- %4.2f%%' % (iter_num, acc_mean, acc_confidence))
                 acc_means.append(round(acc_mean, 2))
-                acc_vars.append(round(acc_confidence, 2))
+                acc_confidences.append(round(acc_confidence, 2))
 
     fig, ax = plt.subplots()
     ax.plot(models, acc_means[0:5], color='orange', linestyle='solid', marker='o',
@@ -203,23 +200,31 @@ def testCUB():
 
     header = ['Backbone:', 'Conv4', 'Conv6', 'ResNet10', 'ResNet18', 'ResNet34']
     names = ['CUB 5W-1S NoAug', 'CUB 5W-5S NoAug', 'CUB 5W-1S Aug', 'CUB 5W-5S Aug']
-    Conv4 = [str(acc_means[0]) + ' +- ' + str(acc_vars[0]), str(acc_means[5]) + ' +- ' + str(acc_vars[5]),
-             str(acc_means[10]) + ' +- ' + str(acc_vars[10]), str(acc_means[15]) + ' +- ' + str(acc_vars[15])]
-    Conv6 = [str(acc_means[1]) + ' +- ' + str(acc_vars[1]), str(acc_means[6]) + ' +- ' + str(acc_vars[6]),
-             str(acc_means[11]) + ' +- ' + str(acc_vars[11]), str(acc_means[16]) + ' +- ' + str(acc_vars[16])]
-    ResNet10 = [str(acc_means[2]) + ' +- ' + str(acc_vars[2]), str(acc_means[7]) + ' +- ' + str(acc_vars[7]),
-                str(acc_means[12]) + ' +- ' + str(acc_vars[12]), str(acc_means[17]) + ' +- ' + str(acc_vars[17])]
-    ResNet18 = [str(acc_means[3]) + ' +- ' + str(acc_vars[3]), str(acc_means[8]) + ' +- ' + str(acc_vars[8]),
-                str(acc_means[13]) + ' +- ' + str(acc_vars[13]), str(acc_means[18]) + ' +-' + str(acc_vars[18])]
-    ResNet34 = [str(acc_means[4]) + ' +- ' + str(acc_vars[4]), str(acc_means[9]) + ' +- ' + str(acc_vars[9]),
-                str(acc_means[14]) + ' +- ' + str(acc_vars[14]), str(acc_means[19]) + ' +- ' + str(acc_vars[19])]
+    Conv4 = [str(acc_means[0]) + ' +- ' + str(acc_confidences[0]), str(acc_means[5]) + ' +- ' + str(acc_confidences[5]),
+             str(acc_means[10]) + ' +- ' + str(acc_confidences[10]),
+             str(acc_means[15]) + ' +- ' + str(acc_confidences[15])]
+    Conv6 = [str(acc_means[1]) + ' +- ' + str(acc_confidences[1]), str(acc_means[6]) + ' +- ' + str(acc_confidences[6]),
+             str(acc_means[11]) + ' +- ' + str(acc_confidences[11]),
+             str(acc_means[16]) + ' +- ' + str(acc_confidences[16])]
+    ResNet10 = [str(acc_means[2]) + ' +- ' + str(acc_confidences[2]),
+                str(acc_means[7]) + ' +- ' + str(acc_confidences[7]),
+                str(acc_means[12]) + ' +- ' + str(acc_confidences[12]),
+                str(acc_means[17]) + ' +- ' + str(acc_confidences[17])]
+    ResNet18 = [str(acc_means[3]) + ' +- ' + str(acc_confidences[3]),
+                str(acc_means[8]) + ' +- ' + str(acc_confidences[8]),
+                str(acc_means[13]) + ' +- ' + str(acc_confidences[13]),
+                str(acc_means[18]) + ' +-' + str(acc_confidences[18])]
+    ResNet34 = [str(acc_means[4]) + ' +- ' + str(acc_confidences[4]),
+                str(acc_means[9]) + ' +- ' + str(acc_confidences[9]),
+                str(acc_means[14]) + ' +- ' + str(acc_confidences[14]),
+                str(acc_means[19]) + ' +- ' + str(acc_confidences[19])]
     makeTable(header, [names, Conv4, Conv6, ResNet10, ResNet18, ResNet34])
 
 
 def testOmniglotAndCross():
     iter_num = 600
     acc_means = []
-    acc_vars = []
+    acc_confidences = []
     # number of labeled data in each class, same as n_support
     shot = [1, 5]
     datasets = ['omniglot', 'cross_char']
@@ -227,20 +232,59 @@ def testOmniglotAndCross():
     for dataset in datasets:
         for n_shot in shot:
             print('Test ' + str(dataset) + ', ' + str(model) + ', n_shot = ' + str(n_shot))
-            acc_all = test(model, n_shot, False, dataset, iter_num)
+            acc_all = test(model, n_shot, False, dataset, iter_num, False)
             acc_all = np.asarray(acc_all)
             acc_mean = np.mean(acc_all)
             acc_std = np.std(acc_all)
-            acc_var = 1.96 * acc_std / np.sqrt(iter_num)
-            print('%d Test Acc = %4.2f%% +- %4.2f%%' % (iter_num, acc_mean, acc_var))
+            acc_confidence = 1.96 * acc_std / np.sqrt(iter_num)
+            print('%d Test Acc = %4.2f%% +- %4.2f%%' % (iter_num, acc_mean, acc_confidence))
             acc_means.append(round(acc_mean, 2))
-            acc_vars.append(round(acc_var, 2))
+            acc_confidences.append(round(acc_confidence, 2))
 
     header = ['Omni 5W-1S', 'Omni 5W-5S', 'Omni->Emnist 5W-1S', 'Omni->Emnist 5W-5S']
-    makeTable(header, [[str(acc_means[0]) + ' +- ' + str(acc_vars[0])], [str(acc_means[1]) + ' +- ' + str(acc_vars[1])],
-                       [str(acc_means[2]) + ' +- ' + str(acc_vars[2])],
-                       [str(acc_means[3]) + ' +- ' + str(acc_vars[3])]])
+    makeTable(header, [[str(acc_means[0]) + ' +- ' + str(acc_confidences[0])],
+                       [str(acc_means[1]) + ' +- ' + str(acc_confidences[1])],
+                       [str(acc_means[2]) + ' +- ' + str(acc_confidences[2])],
+                       [str(acc_means[3]) + ' +- ' + str(acc_confidences[3])]])
+
+
+def testFurtherAdaptation():
+    iter_num = 600
+    acc_means = []
+    acc_confidences = []
+    # number of labeled data in each class, same as n_support
+    n_shot = 5
+    dataset = 'CUB'
+    model = 'ResNet18'
+    adaptations = [False, True]
+    for adaptation in adaptations:
+        print('Test ' + str(dataset) + ', ' + str(model) + ', n_shot = ' + str(n_shot) + ', adaptation = ' + str(
+            adaptation))
+        acc_all = test(model, n_shot, True, dataset, iter_num, adaptation)
+        acc_all = np.asarray(acc_all)
+        acc_mean = np.mean(acc_all)
+        acc_std = np.std(acc_all)
+        acc_confidence = 1.96 * acc_std / np.sqrt(iter_num)
+        print('%d Test Acc = %4.2f%% +- %4.2f%%' % (iter_num, acc_mean, acc_confidence))
+        acc_means.append(round(acc_mean, 2))
+        acc_confidences.append(round(acc_confidence, 2))
+
+    header = ['CUB ResNet18 5W-5S NoAdaptation', 'CUB ResNet18 5W-5S Adaptation']
+    makeTable(header, [[str(acc_means[0]) + ' +- ' + str(acc_confidences[0])],
+                       [str(acc_means[1]) + ' +- ' + str(acc_confidences[1])]])
+
+    objects = ('Without\n Adapt.', 'With\n Adapt.')
+    y_pos = np.arange(len(objects))
+    plt.barh(y_pos, [acc_means[0], 0], align='center', alpha=1)
+    plt.barh(y_pos, [0, acc_means[1]], align='center', alpha=1)
+    plt.yticks(y_pos, objects)
+    plt.xlabel('Accuracy')
+    plt.title('CUB, 5-Shot, ResNet18')
+    plt.grid()
+    plt.show()
+
 
 
 testOmniglotAndCross()
 testCUB()
+testFurtherAdaptation()
