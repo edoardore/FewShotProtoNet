@@ -25,9 +25,9 @@ class distLinear(nn.Module):
             WeightNorm.apply(self.L, 'weight', dim=0) #split the weight update component to direction and norm      
 
         if outdim <=200:
-            self.scale_factor = 2; #a fixed scale factor to scale the output of cos value into a reasonably large input for softmax, for to reproduce the result of CUB with ResNet10, use 4. see the issue#31 in the github 
+            self.scale_factor = 2
         else:
-            self.scale_factor = 10; #in omniglot, a larger scale factor is required to handle >1000 output classes.
+            self.scale_factor = 10
 
     def forward(self, x):
         x_norm = torch.norm(x, p=2, dim =1).unsqueeze(1).expand_as(x)
@@ -35,7 +35,7 @@ class distLinear(nn.Module):
         if not self.class_wise_learnable_norm:
             L_norm = torch.norm(self.L.weight.data, p=2, dim =1).unsqueeze(1).expand_as(self.L.weight.data)
             self.L.weight.data = self.L.weight.data.div(L_norm + 0.00001)
-        cos_dist = self.L(x_normalized) #matrix product by forward function, but when using WeightNorm, this also multiply the cosine distance by a class-wise learnable norm, see the issue#4&8 in the github
+        cos_dist = self.L(x_normalized) #matrix product by forward function
         scores = self.scale_factor* (cos_dist) 
 
         return scores
@@ -48,15 +48,15 @@ class Flatten(nn.Module):
         return x.view(x.size(0), -1)
 
 
-class Linear_fw(nn.Linear): #used in MAML to forward input with fast weight 
+class Linear_fw(nn.Linear):
     def __init__(self, in_features, out_features):
         super(Linear_fw, self).__init__(in_features, out_features)
-        self.weight.fast = None #Lazy hack to add fast weight link
+        self.weight.fast = None
         self.bias.fast = None
 
     def forward(self, x):
         if self.weight.fast is not None and self.bias.fast is not None:
-            out = F.linear(x, self.weight.fast, self.bias.fast) #weight.fast (fast weight) is the temporaily adapted weight
+            out = F.linear(x, self.weight.fast, self.bias.fast)
         else:
             out = super(Linear_fw, self).forward(x)
         return out

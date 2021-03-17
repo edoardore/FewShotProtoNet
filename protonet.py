@@ -17,7 +17,7 @@ class ProtoNet(nn.Module):
         self.n_query = -1  # (change depends on input)
         self.feature = model_func()
         self.feat_dim = self.feature.final_feat_dim
-        self.change_way = True  # some methods allow different_way classification during training and test
+        self.change_way = True
 
     def forward(self, x):
         out = self.feature.forward(x)
@@ -60,7 +60,6 @@ class ProtoNet(nn.Module):
             avg_loss = avg_loss + loss.item()
 
             if i % print_freq == 0:
-                # print(optimizer.state_dict()['param_groups'][0]['lr'])
                 print('Epoch {:d} | Batch {:d}/{:d} | Loss {:f}'.format(epoch, i, len(train_loader),
                                                                         avg_loss / float(i + 1)))
 
@@ -85,7 +84,7 @@ class ProtoNet(nn.Module):
         return acc_mean
 
     def set_forward_adaptation(self, x,
-                               is_feature=True):  # further adaptation, default is fixing feature and train a new softmax clasifier
+                               is_feature=True):  # Fix feature and train a new softmax clasifier
         assert is_feature == True, 'Feature is fixed in further adaptation'
         z_support, z_query = self.parse_feature(x, is_feature)
 

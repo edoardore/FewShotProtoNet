@@ -18,7 +18,7 @@ def train(base_loader, val_loader, model, start_epoch, stop_epoch, checkpoint_di
 
     for epoch in range(start_epoch, stop_epoch):
         model.train()
-        model.train_loop(epoch, base_loader, optimizer)  # model are called by reference, no need to return
+        model.train_loop(epoch, base_loader, optimizer)
         model.eval()
 
         acc = model.test_loop(val_loader)
@@ -105,7 +105,7 @@ if __name__ == '__main__':
             stop_epoch = 600  # default
 
     n_query = max(1, int(
-        16 * test_n_way / train_n_way))  # if test_n_way is smaller than train_n_way, reduce n_query to keep batch size small
+        16 * test_n_way / train_n_way))
     train_few_shot_params = dict(n_way=train_n_way, n_support=n_shot)
     base_datamgr = SetDataManager(image_size, n_query=n_query, **train_few_shot_params)
     base_loader = base_datamgr.get_data_loader(base_file, aug=train_aug)
