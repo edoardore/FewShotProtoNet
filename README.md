@@ -14,7 +14,7 @@ Eseguire il modulo train.py per addestrare e condurre un nuovo esperimento, le s
     # .Conv4, .Conv6, .ResNet10, .ResNet18, .ResNet34
     model = 'Conv6'
 
-    # CUB, miniImagenet, cross, omniglot, cross_char
+    # CUB, omniglot, cross_char
     dataset = 'CUB'
 
     # class num to classify for training
