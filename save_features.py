@@ -51,7 +51,7 @@ if __name__ == '__main__':
     # .Conv4, .Conv6, .ResNet10, .ResNet18, .ResNet34
     model = 'ResNet34'
 
-    # CUB, miniImagenet, cross, omniglot, cross_char
+    # CUB, omniglot, cross_char
     dataset = 'CUB'
 
     # class num to classify for training
